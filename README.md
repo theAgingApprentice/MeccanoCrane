@@ -2,7 +2,11 @@
 
 ![CranePicture](/doc/craneExample.jpg)
 
-This repository contains allthe information about the Meccano crane project undertaken in 2025. This is what happens when you remember the dreams of your youth and now have the skill sand means to make them a reality. For this project we had sme rules that we tried to adhere to as much as possible. Those rues are:
+This repository contains all of the information about the Meccano crane project that was undertaken in 2025. This is what happens when you remember the dreams of your youth and you now have the skills and means to make those long ago dreams a present day reality. For this project we had some rules that we tried to adhere to as much as possible. Those rues are:
+
+1. Use Meccano parts as much as possible.
+2. Have the crane be controllable by a remote control.
+3. Interesting mechanisms take precidence over practical efficiency. 
 
 
 ## Libraries
@@ -32,6 +36,8 @@ Make the source files Doxygen compliant following the guidelines outlined
 Unit tests are loaded to the SOC via the PlatformIO, Advanced, test tool. Results appear in a seperate terminal output session that you can access once the tests complete. A future release  of the template repository will contain test cases and instructions on how to use them.
 
 # Documentation
-Doxygen comments are embedded in all source files and a Doxyfile has been added to the root folder of this respository. These are the steps to follow to set up Doxygen. Note that inorder to have your documentation avaibale via Github Pages the Repo cannot be private. Since at this time tthis repo is provate these steps are not all fully impemented.
+A [manual](/doc/MeccanoCrane-Manual.pdf) is being created for this project. 
+
+For software developers, Doxygen comments are embedded in all source files and a Doxyfile has been added to the root folder of this respository. These are the steps to follow to set up Doxygen. Note that inorder to have your documentation avaibale via Github Pages the Repo cannot be private. Since at this time tthis repo is provate these steps are not all fully impemented.
 
 "How to" instructions for setting up Doxygen are [here](https://kylerobots.github.io/tutorials/Automatic_Documentation/).
