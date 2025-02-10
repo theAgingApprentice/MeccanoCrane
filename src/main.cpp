@@ -47,14 +47,16 @@
 #include <MqttLogger.h> // For logging to serial and/or MQTT.
 #include <apSecrets.h> // Known Access Point SSID and password pairs.
 #include <TaskScheduler.h> // Manage scheduding task executin out of loop().
-#include <ArduinoOTA.h> // For OTA update support. Comes with PlatformIO. 
+//#include <ArduinoOTA.h> // For OTA update support. Comes with PlatformIO. 
 #include <huzzah32GpioPins.h> // Pin names for Adafruit Huzzah32 dev board.
 #include <projectPinout.h> // Map application pins development board pins. 
+#include <ESP32Servo.h> // Servo control library.
 
 // Define global objects.
 WiFiClient espClient; // WiFi client object.
 PubSubClient client(espClient); // MQTT client.
 Scheduler runner; // Task scheduler.
+Servo servoMotor; // Servo motor object.
 
 // Structure for storing Wifi Access Point information.
 struct accessPoint 
@@ -117,7 +119,7 @@ const char* buildVersion = BUILD_VERSION; // Version of the software.
 // Forward function declarations.
 void mqttSendKeepAlive();
 void mqttCheckIncoming();
-void otaCheck();
+//void otaCheck();
 void mqttIncomingCallback(char* topic, byte* payload, unsigned int length); 
 void stop();
 void goForward();
@@ -126,8 +128,12 @@ void motorControl();
 String getPassword(String lAP);
 Task t1(keepAlive, TASK_FOREVER, &mqttSendKeepAlive);
 Task t2(keepAlive, TASK_FOREVER, &mqttCheckIncoming);
-Task t3(keepAlive, TASK_FOREVER, &otaCheck);
+//Task t3(keepAlive, TASK_FOREVER, &otaCheck);
 Task t4(keepAlive, TASK_FOREVER, &motorControl);
+int servoForward = 170;
+int servoBackward = 10;
+int servoStop = 90;
+
 
 /**
  * @brief Handle OTA updates.
@@ -143,10 +149,10 @@ Task t4(keepAlive, TASK_FOREVER, &motorControl);
  * 
  * @return NA No return value.
  */
-void otaCheck() 
-{
-   ArduinoOTA.handle();  
-} // otaCheck()
+//void otaCheck() 
+//{
+//   ArduinoOTA.handle();  
+//} // otaCheck()
 
 /** 
  * @brief Check for incoming MQTT messages.
@@ -452,6 +458,8 @@ void stop()
    digitalWrite(inB2, LOW);
    digitalWrite(inC1, LOW);
    digitalWrite(inC2, LOW);
+   // Servo motor
+   servoMotor.write(servoStop); // Put Servo motor in stop position.
 } // stop()
 
 /**
@@ -469,6 +477,8 @@ void goForward()
    digitalWrite(inB2, HIGH);
    digitalWrite(inC1, LOW);
    digitalWrite(inC2, HIGH);
+   // Servo motor
+   servoMotor.write(servoForward); // Put Servo motor in forward position.
 } // goForward()
 
 /**
@@ -485,6 +495,8 @@ void goBackward()
    digitalWrite(inB2, LOW);
    digitalWrite(inC1, HIGH);
    digitalWrite(inC2, LOW);
+   // Servo motor
+   servoMotor.write(servoBackward); // put Servo motor in backward position.
 } // goBackward()
 
 /**
@@ -531,10 +543,10 @@ void setup()
    LOGLNF(" milliseconds.");
    runner.addTask(t2);
    
-   LOG("Add task t3 to check for OTA messages every ");
-   LOGNF(keepAlive);
-   LOGLNF(" milliseconds.");
-   runner.addTask(t3); 
+//   LOG("Add task t3 to check for OTA messages every ");
+//   LOGNF(keepAlive);
+//   LOGLNF(" milliseconds.");
+//   runner.addTask(t3); 
 
    LOG("Add task t4 to manage motors every ");
    LOGNF(keepAlive);
@@ -555,16 +567,16 @@ void setup()
    LOGLNF(" milliseconds.");   
    t2.enable();
 
-   LOGLN("Enabling OTA Feature.");
-   ArduinoOTA.setPassword("lonelybinary");
-   ArduinoOTA.begin();
+//   LOGLN("Enabling OTA Feature.");
+//   ArduinoOTA.setPassword("lonelybinary");
+//   ArduinoOTA.begin();
 
-   LOGLN("Enabled t3 to check for incoming OTA messages every ");
-   LOGNF(keepAlive);
-   LOGLNF(" milliseconds.");   
-   t3.enable();
+//   LOGLN("Enabled t3 to check for incoming OTA messages every ");
+//   LOGNF(keepAlive);
+//   LOGLNF(" milliseconds.");   
+//   t3.enable();
 
-   LOGLN("Set up motor control pins.");
+   LOGLN("Set up DC motor control pins.");
    pinMode(enA1, OUTPUT);
    pinMode(inA1, OUTPUT);
    pinMode(inA2, OUTPUT);
@@ -573,6 +585,18 @@ void setup()
    pinMode(inC1, OUTPUT);
    pinMode(inC2, OUTPUT);
 
+   LOGLN("Set up Servo motor control pin.");
+	// Allow allocation of all timers
+	ESP32PWM::allocateTimer(0);
+	ESP32PWM::allocateTimer(1);
+	ESP32PWM::allocateTimer(2);
+	ESP32PWM::allocateTimer(3);
+	servoMotor.setPeriodHertz(50);    // standard 50 hz servo
+	servoMotor.attach(servoPin, 500, 2400); // attaches the servo on pin 18 to the servo object
+   servoMotor.write(servoStop); // Put Servo motor in stop position.
+	// using default min/max of 1000us and 2000us
+	// different servos may require different min/max settings
+	// for an accurate 0 to 180 sweep
    LOGLN("Enabled t4 to manage motors every ");
    LOGNF(keepAlive);
    LOGLNF(" milliseconds.");   
