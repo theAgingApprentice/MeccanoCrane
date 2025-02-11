@@ -130,8 +130,8 @@ Task t1(keepAlive, TASK_FOREVER, &mqttSendKeepAlive);
 Task t2(keepAlive, TASK_FOREVER, &mqttCheckIncoming);
 //Task t3(keepAlive, TASK_FOREVER, &otaCheck);
 Task t4(keepAlive, TASK_FOREVER, &motorControl);
-int servoForward = 170;
-int servoBackward = 10;
+int servoForward = 115;
+int servoBackward = 55;
 int servoStop = 90;
 
 
@@ -197,18 +197,26 @@ void mqttIncomingCallback(char* topic, byte* payload, unsigned int length)
    String msg = (char*)payload;
    LOG("Received message: ");
    LOGLNF(msg);
-   if(msg == "forward")
+   int commaPosition = msg.indexOf(',');
+   String command = msg.substring(0,commaPosition);
+   String value = msg.substring(commaPosition+1);
+   if(command == "forward")
    {
       goForward();
    } // if
-   else if(msg == "backward")
+   else if(command == "backward")
    {
       goBackward();
    }  // if
-   else if(msg == "stop")
+   else if(command == "stop")
    {
       stop();
    }  // if
+   else if(command == "pos")
+   {
+      int servoValue = value.toInt();
+      servoMotor.write(servoValue);
+   } // if
    else
    {
       LOGLN("Unknown command.");
